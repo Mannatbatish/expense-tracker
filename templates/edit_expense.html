@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}Edit Expense - Expense Tracker{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1><i class="fas fa-edit"></i> Edit Expense</h1>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+<div class="form-container">
+    <form method="POST" action="{{ url_for('edit_expense', id=expense['id']) }}">
+
+        <!-- TITLE -->
+        <div class="form-group">
+            <label for="title">
+                <i class="fas fa-pencil-alt"></i> Expense Title *
+            </label>
+            <input type="text" id="title" name="title"
+                   value="{{ expense['title'] }}"
+                   required>
+        </div>
+
+        <!-- AMOUNT -->
+        <div class="form-group">
+            <label for="amount">
+                <i class="fas fa-rupee-sign"></i> Amount (₹) *
+            </label>
+            <input type="number" id="amount" name="amount"
+                   value="{{ expense['amount'] }}"
+                   step="0.01" min="0" required>
+        </div>
+
+        <!-- CATEGORY -->
+        <div class="form-group">
+            <label for="category">
+                <i class="fas fa-tag"></i> Category *
+            </label>
+            <select id="category" name="category" required>
+                <option value="" disabled>Select a category...</option>
+                {% for cat in ['Food','Transport','Shopping','Entertainment','Health','Education','Bills','Travel','Other'] %}
+                <option value="{{ cat }}" 
+                    {% if expense['category'] == cat %}selected{% endif %}>
+                    {{ cat }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- DATE -->
+        <div class="form-group">
+            <label for="date">
+                <i class="fas fa-calendar"></i> Date *
+            </label>
+            <input type="date" id="date" name="date"
+                   value="{{ expense['date'] }}"
+                   required>
+        </div>
+
+        <!-- NOTES -->
+        <div class="form-group">
+            <label for="notes">
+                <i class="fas fa-sticky-note"></i> Notes (Optional)
+            </label>
+            <textarea id="notes" name="notes"
+                      placeholder="Any extra details...">{{ expense['notes'] or '' }}</textarea>
+        </div>
+
+        <!-- BUTTONS -->
+        <div class="form-buttons">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Update Expense
+            </button>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+
+    </form>
+</div>
+
+{% endblock %}

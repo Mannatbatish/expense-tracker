@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block title %}Search - Expense Tracker{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1><i class="fas fa-search"></i> Search Expenses</h1>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+<!-- SEARCH FORM -->
+<div class="search-container">
+    <form method="GET" action="{{ url_for('search') }}">
+        <div class="search-bar">
+            <div class="form-group">
+                <label for="q"><i class="fas fa-search"></i> Search by Title or Notes</label>
+                <input type="text" id="q" name="q" 
+                       value="{{ query }}"
+                       placeholder="e.g. Lunch, Netflix...">
+            </div>
+
+            <div class="form-group">
+                <label for="category"><i class="fas fa-tag"></i> Filter by Category</label>
+                <select id="category" name="category">
+                    <option value="">All Categories</option>
+                    {% for cat in ['Food','Transport','Shopping','Entertainment','Health','Education','Bills','Travel','Other'] %}
+                    <option value="{{ cat }}"
+                        {% if category == cat %}selected{% endif %}>
+                        {{ cat }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="search-btn-group">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Search
+                </button>
+                <a href="{{ url_for('search') }}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Clear
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- SEARCH RESULTS -->
+<div class="card mt-20">
+    <div class="card-header">
+        <h2><i class="fas fa-list"></i> 
+            {% if query or category %}
+                Results for 
+                {% if query %}"{{ query }}"{% endif %}
+                {% if category %} in {{ category }}{% endif %}
+            {% else %}
+                All Expenses
+            {% endif %}
+        </h2>
+        <span class="result-count">{{ expenses|length }} found</span>
+    </div>
+    <div class="card-body">
+        {% if expenses %}
+        <div class="table-wrapper">
+            <table class="expense-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expense in expenses %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td><strong>{{ expense['title'] }}</strong></td>
+                        <td>
+                            <span class="category-badge {{ expense['category']|lower|replace(' ', '-') }}">
+                                {{ expense['category'] }}
+                            </span>
+                        </td>
+                        <td><i class="fas fa-calendar-alt"></i> {{ expense['date'] }}</td>
+                        <td class="amount">₹{{ "%.2f"|format(expense['amount']) }}</td>
+                        <td class="notes-cell">{{ expense['notes'] or '—' }}</td>
+                        <td class="actions">
+                            <a href="{{ url_for('edit_expense', id=expense['id']) }}"
+                               class="btn-icon edit" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{{ url_for('delete_expense', id=expense['id']) }}"
+                               class="btn-icon delete" title="Delete"
+                               onclick="return confirm('Delete this expense?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-search"></i>
+                <p>No expenses found matching your search!</p>
+                <a href="{{ url_for('search') }}" class="btn btn-secondary">Clear Search</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

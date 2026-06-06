@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard - Expense Tracker{% endblock %}
+
+{% block content %}
+
+<!-- TOP SUMMARY CARDS -->
+<div class="page-header">
+    <h1><i class="fas fa-chart-pie"></i> Dashboard</h1>
+    <a href="{{ url_for('add_expense') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Add Expense
+    </a>
+</div>
+
+<!-- STATS CARDS -->
+<div class="stats-grid">
+    <div class="stat-card total">
+        <div class="stat-icon"><i class="fas fa-rupee-sign"></i></div>
+        <div class="stat-info">
+            <h3>Total Expenses</h3>
+            <p class="stat-number">₹{{ "%.2f"|format(total) }}</p>
+        </div>
+    </div>
+
+    <div class="stat-card count">
+        <div class="stat-icon"><i class="fas fa-list"></i></div>
+        <div class="stat-info">
+            <h3>Total Entries</h3>
+            <p class="stat-number">{{ expenses|length }}</p>
+        </div>
+    </div>
+
+    <div class="stat-card avg">
+        <div class="stat-icon"><i class="fas fa-calculator"></i></div>
+        <div class="stat-info">
+            <h3>Average Expense</h3>
+            <p class="stat-number">
+                {% if expenses|length > 0 %}
+                    ₹{{ "%.2f"|format(total / expenses|length) }}
+                {% else %}
+                    ₹0.00
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <div class="stat-card categories">
+        <div class="stat-icon"><i class="fas fa-tags"></i></div>
+        <div class="stat-info">
+            <h3>Categories Used</h3>
+            <p class="stat-number">{{ categories|length }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- CATEGORY + MONTHLY SUMMARY -->
+<div class="two-col-grid">
+
+    <!-- CATEGORY BREAKDOWN -->
+    <div class="card">
+        <div class="card-header">
+            <h2><i class="fas fa-tags"></i> By Category</h2>
+        </div>
+        <div class="card-body">
+            {% if categories %}
+                {% for cat in categories %}
+                <div class="category-row">
+                    <div class="category-label">
+                        <span class="category-badge {{ cat['category']|lower|replace(' ', '-') }}">
+                            {{ cat['category'] }}
+                        </span>
+                        <span class="category-count">{{ cat['count'] }} entries</span>
+                    </div>
+                    <div class="category-amount">₹{{ "%.2f"|format(cat['total']) }}</div>
+                </div>
+                {% if total > 0 %}
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: {{ (cat['total'] / total * 100)|round(1) }}%"></div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            {% else %}
+                <p class="empty-text">No expenses yet!</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- MONTHLY SUMMARY -->
+    <div class="card">
+        <div class="card-header">
+            <h2><i class="fas fa-calendar"></i> Monthly Summary</h2>
+        </div>
+        <div class="card-body">
+            {% if monthly %}
+                {% for month in monthly %}
+                <div class="monthly-row">
+                    <div class="monthly-label">
+                        <span class="month-name">{{ month['month'] }}</span>
+                        <span class="month-count">{{ month['count'] }} expenses</span>
+                    </div>
+                    <div class="monthly-amount">₹{{ "%.2f"|format(month['total']) }}</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="empty-text">No data yet!</p>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+<!-- ALL EXPENSES TABLE -->
+<div class="card mt-20">
+    <div class="card-header">
+    <h2><i class="fas fa-table"></i> All Expenses</h2>
+    <div style="display:flex; gap:0.5rem;">
+        <a href="{{ url_for('download_expenses') }}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-download"></i> Download CSV
+        </a>
+        <a href="{{ url_for('search') }}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-search"></i> Search
+        </a>
+    </div>
+</div>
+    <div class="card-body">
+        {% if expenses %}
+        <div class="table-wrapper">
+            <table class="expense-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expense in expenses %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td><strong>{{ expense['title'] }}</strong></td>
+                        <td>
+                            <span class="category-badge {{ expense['category']|lower|replace(' ', '-') }}">
+                                {{ expense['category'] }}
+                            </span>
+                        </td>
+                        <td><i class="fas fa-calendar-alt"></i> {{ expense['date'] }}</td>
+                        <td class="amount">₹{{ "%.2f"|format(expense['amount']) }}</td>
+                        <td class="notes-cell">{{ expense['notes'] or '—' }}</td>
+                        <td class="actions">
+                            <a href="{{ url_for('edit_expense', id=expense['id']) }}" 
+                               class="btn-icon edit" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{{ url_for('delete_expense', id=expense['id']) }}"
+                               class="btn-icon delete" title="Delete"
+                               onclick="return confirm('Delete this expense?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <p>No expenses found!</p>
+                <a href="{{ url_for('add_expense') }}" class="btn btn-primary">Add Your First Expense</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
